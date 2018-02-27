@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1, user-scalable=0, minimal-ui">
+    <title></title>
+    <style type="text/css">
+        body, html,#allmap {width: 100%;height: 300px;overflow: hidden;margin:0;font-family:"微软雅黑";}
+    </style>
+<!--     <script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.js"></script> -->
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=2msS1xll6EQpGIfrg3XE1CUIV8IvnbpX"></script>
+</head>
+<body>
+    <div id="info"></div>
+    <div id="allmap"></div>
+
+
+<script>
+    var map = new BMap.Map("allmap");
+    var default_data = {
+        error: "1"
+    };
+    var connectMerchantJSBridge = function (callback) {
+        try {
+            if (window.TestJavascriptBridge) {
+                callback(TestJavascriptBridge);
+            } else {
+                document.addEventListener("TestJavascriptBridgeReady", function () {
+                    callback(TestJavascriptBridge);
+                }, false);
+            }
+        } catch (ex) { }
+    };
+
+    /*app native调用本页面方法*/
+    connectMerchantJSBridge(function(bridge) {
+        bridge.init(function(message, responseCallback) {
+        });
+        bridge.registerHandler("click_location", function(data, responseCallback) {
+            // 获取拼接的json数据
+            console.log(".........."+ data+ ".................");
+            var locationData = JSON.parse(data);
+            document.getElementById("info").innerHTML = locationData.addr+locationData.locationDescribe;
+            //document.getElementById("info").innerHTML = data;
+            // 在地图中添加标记
+            addOverlay(locationData.latitude, locationData.longitude);
+            responseCallback("receive click_location");
+        });
+    });
+
+    function addOverlay(latitude, longitude) {
+        //var map = new BMap.Map("allmap");
+        var point = new BMap.Point(longitude, latitude); // 创建标记点
+        map.centerAndZoom(point, 15);
+        var marker = new BMap.Marker(point);  // 创建标注
+        var circle = new BMap.Circle(point,200,{strokeColor:"blue", strokeWeight:2, strokeOpacity:0.5}); //创建圆
+        map.addOverlay(marker);            //增加点
+        marker.setAnimation(BMAP_ANIMATION_BOUNCE); //跳动的动画
+        map.addOverlay(circle);            //增加圆
+    }
+</script>
+
+</body>
+</html>
